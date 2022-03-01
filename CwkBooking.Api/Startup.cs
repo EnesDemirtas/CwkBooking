@@ -1,5 +1,4 @@
-using CwkBooking.Api.Services;
-using CwkBooking.Api.Services.Abstractions;
+using CwkBooking.Api.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,9 +9,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CwkBooking.Api
 {
@@ -35,19 +31,9 @@ namespace CwkBooking.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CwkBooking.Api", Version = "v1" });
             });
 
-            // Will create an instance the first time it is required
-            // Afterwards it always passes the exact same instance to all consumers
             services.AddSingleton<DataSource>();
+            services.AddHttpContextAccessor();
 
-            // Will create an instance each time that it is required
-            // services.AddTransient();
-
-            // It creates an instance for each request
-            // services.AddScoped();
-
-            services.AddSingleton<ISingletonOperation, SingletonOperation>();
-            services.AddTransient<ITransientOperation, TransientOperation>();
-            services.AddScoped<IScopedOperation, ScopedOperation>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,6 +51,8 @@ namespace CwkBooking.Api
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseDateTimeHeader();
 
             app.UseEndpoints(endpoints =>
             {

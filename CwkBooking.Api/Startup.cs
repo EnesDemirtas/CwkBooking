@@ -38,6 +38,7 @@ namespace CwkBooking.Api
 
             var connectionString = Configuration.GetConnectionString("Default");
             services.AddDbContext<DataContext>(options => { options.UseSqlServer(connectionString); });
+            services.AddAutoMapper(typeof(Startup));
 
         }
 

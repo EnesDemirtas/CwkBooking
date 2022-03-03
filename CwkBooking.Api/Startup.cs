@@ -1,16 +1,14 @@
 using CwkBooking.Api.Middleware;
 using CwkBooking.Dal;
+using CwkBooking.Dal.Repositories;
+using CwkBooking.Domain.Abstracts.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
 
 namespace CwkBooking.Api
 {
@@ -39,6 +37,7 @@ namespace CwkBooking.Api
             var connectionString = Configuration.GetConnectionString("Default");
             services.AddDbContext<DataContext>(options => { options.UseSqlServer(connectionString); });
             services.AddAutoMapper(typeof(Startup));
+            services.AddScoped<IHotelsRepository, HotelRepository>();
 
         }
 

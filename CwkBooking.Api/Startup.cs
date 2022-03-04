@@ -2,6 +2,8 @@ using CwkBooking.Api.Middleware;
 using CwkBooking.Dal;
 using CwkBooking.Dal.Repositories;
 using CwkBooking.Domain.Abstracts.Repositories;
+using CwkBooking.Domain.Abstracts.Services;
+using CwkBooking.Services.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +40,7 @@ namespace CwkBooking.Api
             services.AddDbContext<DataContext>(options => { options.UseSqlServer(connectionString); });
             services.AddAutoMapper(typeof(Startup));
             services.AddScoped<IHotelsRepository, HotelRepository>();
+            services.AddScoped<IReservationService, ReservationService>();
 
         }
 

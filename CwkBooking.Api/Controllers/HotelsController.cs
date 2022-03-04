@@ -95,7 +95,7 @@ namespace CwkBooking.Api.Controllers
         public async Task<IActionResult> GetHotelRoomById(int hotelId, int roomId)
         {
             var room = await _hotelsRepo.GetHotelRoomByIdAsync(hotelId, roomId);
-            var mappedRoom = _mapper.Map<List<RoomGetDTO>>(room);
+            var mappedRoom = _mapper.Map<RoomGetDTO>(room);
 
             return Ok(mappedRoom);
         }

@@ -9,6 +9,7 @@ namespace CwkBooking.Api.Automapper
         public ReservationMappingProfiles()
         {
             CreateMap<ReservationPutPostDTO, Reservation>();
+            CreateMap<Reservation, ReservationGetDTO>();
         }
     }
 }

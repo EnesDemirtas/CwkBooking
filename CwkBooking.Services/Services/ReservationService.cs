@@ -2,6 +2,7 @@
 using CwkBooking.Domain.Abstracts.Repositories;
 using CwkBooking.Domain.Abstracts.Services;
 using CwkBooking.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,41 +22,57 @@ namespace CwkBooking.Services.Services
             _ctx = ctx;
         }
 
-        public async Task<Reservation> MakeReservation(Reservation reservation)
+        public async Task<Reservation> MakeReservationAsync(Reservation reservation)
         {
-            // Step 1: Create a reservation instance 
-            //var reservation = new Reservation
-            //{
-            //    HotelId = hotelId,
-            //    RoomId = roomId,
-            //    CheckInDate = checkIn,
-            //    CheckOutDate = checkOut,
-            //    Customer = customer
-            //};
 
-            // Step 2: Get the hotel, including all rooms
+            // Step 1: Get the hotel, including all rooms
             var hotel = await _hotelRepository.GetHotelByIdAsync(reservation.HotelId);
 
-            // Step 3: Find the specified room
+            // Step 2: Find the specified room
             var room = hotel.Rooms.Where(r => r.RoomId == reservation.RoomId).FirstOrDefault();
 
-            // Step 4: Make sure the room is available
-            var roomBusyFrom = room.BusyFrom == null ? default(DateTime) : room.BusyFrom;
-            var roomBusyTo = room.BusyTo == null ? default(DateTime) : room.BusyTo;
-            var isBusy = reservation.CheckInDate >= roomBusyFrom && reservation.CheckInDate <= roomBusyTo;
+            if (hotel == null || room == null) return null;
+
+            // Step 3: Make sure the room is available
+            bool isBusy = await _ctx.Reservations.AnyAsync(r => 
+                (reservation.CheckInDate >= r.CheckInDate && reservation.CheckInDate <= r.CheckOutDate)
+                && (reservation.CheckOutDate >= r.CheckInDate && reservation.CheckOutDate <= r.CheckOutDate)
+            );
 
             if (isBusy || room.NeedsRepair)
                 return null;
 
-            // Step 5: Set busyFrom and busyTo on the room
-            room.BusyFrom = reservation.CheckInDate;
-            room.BusyTo = reservation.CheckOutDate;
 
-            // Step 6: Persist all changes to database
+            // Step 4: Persist all changes to database
             _ctx.Rooms.Update(room);
             _ctx.Reservations.Add(reservation);
             await _ctx.SaveChangesAsync();
 
+            return reservation;
+        }
+
+        public async Task<List<Reservation>> GetAllReservationsAsync()
+        {
+            return await _ctx.Reservations.Include(r => r.Hotel).Include(r => r.Room).ToListAsync();
+        }
+
+        public async Task<Reservation> GetReservationByIdAsync(int id)
+        {
+            return await _ctx.Reservations
+                .Include(r => r.Hotel)
+                .Include(r => r.Room)
+                .FirstOrDefaultAsync(r => r.ReservationId == id);
+        }
+
+        public async Task<Reservation> DeleteReservationAsync(int id)
+        {
+            var reservation = await _ctx.Reservations.FirstOrDefaultAsync(r => r.ReservationId == id);
+
+            if (reservation != null)
+            {
+                _ctx.Reservations.Remove(reservation);
+            }
+            await _ctx.SaveChangesAsync();
             return reservation;
         }
     }
